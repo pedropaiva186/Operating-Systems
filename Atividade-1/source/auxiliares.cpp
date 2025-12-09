@@ -55,10 +55,18 @@ void filho_secundario(std::vector<std::string> & commands)
 
     for(auto & com : commands)
     {
+        // Criando um pipeline para poder executar os comandos do terminal e printá-los antes do fim de F1 e F2
+        int fd[2];
+        pipe(fd);
+
         pid_t procs = fork(); // Cria um novo processo para cada comando
 
         if(procs == 0) // Caso seja processo filho
         {
+            dup2(fd[1], STDOUT_FILENO);
+            close(fd[0]);
+            close(fd[1]);
+
             // Passando o comando em string para char*
             char* args[] = {
                 const_cast<char*>(com.c_str()),
@@ -77,6 +85,18 @@ void filho_secundario(std::vector<std::string> & commands)
         }
         else // Será o processo pai
         {
+            close(fd[1]); // Fecha o pipeline
+
+            char buffer[1024]; // Cria o buffer para coletar os elementos do pipeline e exibi-los no terminal
+            ssize_t n;
+
+            while ((n = read(fd[0], buffer, sizeof(buffer))) > 0) // Enquanto houver elementos no buffer
+            {
+                write(STDOUT_FILENO, buffer, n);
+            }
+
+            close(fd[0]);
+
             pids.push_back(procs);
         }
     }
