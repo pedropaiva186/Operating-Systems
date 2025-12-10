@@ -1,0 +1,11 @@
+A atividade 1 tem como objetivo prover uma dinâmica de criação de diversos processos, se apropriando do formato de criação deles de processos pais e filhos
+para verificar de forma prática a interação entre os processos em um sistema operacional, onde focamos em realizar a criação de diversos processos, para
+assim enxergar quais comandos eles são capazes de realizar dentro de uma máquina, porém, se limitando a comandos simples de terminal.
+Assim, o objetivo foi a partir de um processo pai P1, criar dois processos filhos F1 e F2, e a partir destes filhos criar outros dois filhos em cada um, onde
+chamamos eles de N para simplificar, fazendo todo esse processo utilizando a biblioteca "unistd.h" para a criação e manipulação de processos, assim fazendo os
+processos N realizarem comandos de terminal no próprio sistema operacional, para assim avaliar de forma prática como esse processo funciona.
+
+Execução:
+
+Para execução deste algoritmo, basta abrir o terminal na pasta central, e direciona-la para o diretório "Atividade-1" caso ainda não esteja nele, após isso,
+é necessário apenas executar o comando "make", para fazer a compilação, e "make run" para executar o algoritmo que foi compilado.

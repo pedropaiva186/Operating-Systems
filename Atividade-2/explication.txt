@@ -1,0 +1,11 @@
+A atividade 2 tem como objetivo fazer a criação e manipulação de outro recurso muito importante para sistemas operacionais, principalmente quando pensamos
+em paralelismo e concorrência, threads, nosso papel neste algoritmo é realizar diversos testes de desempenho levando em conta diferentes formas de
+realizar as mesmas operações, no geral, nossa função é realizar diversos cálculos estatísticos em um vetor de inteiros, onde esses cálculos serão a média,
+a mediana e o desvio padrão, no qual vamos realizar essas comparações levando em conta um algoritmo multithread, um com uma única thread e um único processo
+e outro com vários processos, onde a divisão de processos e threads ocorreu dividindo cada cálculo estatístico para uma unidade de processamento, e assim
+avaliando os impactos de desempenho de cada uma.
+
+Execução:
+
+Para execução deste algoritmo, basta abrir o terminal na pasta central, e direciona-la para o diretório "Atividade-2" caso ainda não esteja nele, após isso,
+é necessário apenas executar o comando "make", para fazer a compilação, e "make run" para executar o algoritmo que foi compilado.
