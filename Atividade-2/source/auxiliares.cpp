@@ -1,5 +1,9 @@
 #include "../include/auxiliares.h"
 
+float g_media;
+float g_mediana;
+float g_dp;
+
 std::vector<int> gerar_vector(int n, int lb, int ub)
 {
     // Configurando a seed para os números aleatórios que serão gerados
@@ -78,22 +82,29 @@ void exec_process_multithread(std::vector<int> & vector_int)
     auto f_mediana = std::async(std::launch::async, calc_mediana, vector_int);
     auto f_dp = std::async(std::launch::async, calc_desvio_padrao, std::ref(vector_int));
 
+    // Coletando apenas o tempo de criação das threads
+    auto criacao_threads = std::chrono::steady_clock::now();
+
     // Coletando os valores de retorno das funções
-    float media = f_media.get();
-    float mediana = f_mediana.get();
-    float dp = f_dp.get();
+    g_media = f_media.get();
+    g_mediana = f_mediana.get();
+    g_dp = f_dp.get();
 
     // Coletando o tempo após as operações do algoritmoi
     auto fim = std::chrono::steady_clock::now();
 
+    // Cálculo de criação das threads
+    auto duracao_threads = std::chrono::duration_cast<std::chrono::microseconds>(criacao_threads - inicio);
+
     // Fazendo o cálculo da duração, e deixando-o no formato de exibição
-    auto duracao = std::chrono::duration_cast<std::chrono::microseconds>(fim - inicio);
+    auto duracao_total = std::chrono::duration_cast<std::chrono::microseconds>(fim - inicio);
 
     // Exibindo os valores de saída
-    std::cout << "Media: " << media << "\n";
-    std::cout << "Mediana: " << mediana << "\n";
-    std::cout << "Desvio padrão: " << dp << "\n";
-    std::cout << "Tempo de execução: " << duracao.count() << "us\n";
+    std::cout << "Media: " << g_media << "\n";
+    std::cout << "Mediana: " << g_mediana << "\n";
+    std::cout << "Desvio padrão: " << g_dp << "\n";
+    std::cout << "Tempo de execução total: " << duracao_total.count() << "us\n";
+    std::cout << "Tempo de criação das threads: " << duracao_threads.count() << "us\n";
 }
 
 void exec_process_unithread(std::vector<int> & vector_int)
@@ -102,9 +113,9 @@ void exec_process_unithread(std::vector<int> & vector_int)
     auto inicio = std::chrono::steady_clock::now();
 
     // Executando as funções
-    float media = calc_media(vector_int);
-    float mediana = calc_mediana(vector_int);
-    float dp = calc_desvio_padrao(vector_int);
+    g_media = calc_media(vector_int);
+    g_mediana = calc_mediana(vector_int);
+    g_dp = calc_desvio_padrao(vector_int);
 
     // Coletando o tempo após as operações do algoritmoi
     auto fim = std::chrono::steady_clock::now();
@@ -113,8 +124,80 @@ void exec_process_unithread(std::vector<int> & vector_int)
     auto duracao = std::chrono::duration_cast<std::chrono::microseconds>(fim - inicio);
 
     // Exibindo os valores de saída
-    std::cout << "Media: " << media << "\n";
-    std::cout << "Mediana: " << mediana << "\n";
-    std::cout << "Desvio padrão: " << dp << "\n";
+    std::cout << "Media: " << g_media << "\n";
+    std::cout << "Mediana: " << g_mediana << "\n";
+    std::cout << "Desvio padrão: " << g_dp << "\n";
     std::cout << "Tempo de execução: " << duracao.count() << "us\n";
+}
+
+void exec_process_multiprocess(std::vector<int> & v)
+{
+    // Criando um pipeline de leitura e escrita para cada processo
+    int pipe_media[2], pipe_mediana[2], pipe_dp[2];
+    pipe(pipe_media);
+    pipe(pipe_mediana);
+    pipe(pipe_dp);
+
+    // Coletando o tempo inicial
+    auto inicio = std::chrono::steady_clock::now();
+
+    // Criando um processo para cada operação
+    if (fork() == 0)
+    {
+        close(pipe_media[0]); // Fechando o pipeline para começar a leitura
+        float media = calc_media(v); // Fazendo o cálculo escolhido
+        write(pipe_media[1], &media, sizeof(float)); // Salvando a informação no pipeline
+        close(pipe_media[1]); // Fechando o pipeline de escrita
+        _exit(0); // Deletando o processo que foi criado
+    }
+
+    if (fork() == 0)
+    {
+        close(pipe_mediana[0]);
+        float mediana = calc_mediana(v);
+        write(pipe_mediana[1], &mediana, sizeof(float));
+        close(pipe_mediana[1]);
+        _exit(0);
+    }
+
+    if (fork() == 0)
+    {
+        close(pipe_dp[0]);
+        float dp = calc_desvio_padrao(v);
+        write(pipe_dp[1], &dp, sizeof(float));
+        close(pipe_dp[1]);
+        _exit(0);
+    }
+
+    // Caso chegue aqui, estamos lidando com o processo pai
+
+    // Fechando os pipelines de escrita para fazer a leitura
+    close(pipe_media[1]);
+    close(pipe_mediana[1]);
+    close(pipe_dp[1]);
+
+    // Lendo as informações
+    read(pipe_media[0], &g_media, sizeof(float));
+    read(pipe_mediana[0], &g_mediana, sizeof(float));
+    read(pipe_dp[0], &g_dp, sizeof(float));
+
+    // Fechando os pipelines de leitura
+    close(pipe_media[0]);
+    close(pipe_mediana[0]);
+    close(pipe_dp[0]);
+
+    // Espera todos os filhos
+    wait(nullptr);
+    wait(nullptr);
+    wait(nullptr);
+
+    // Fazendo os cálculos dos tempos
+    auto fim = std::chrono::steady_clock::now();
+    auto duracao = std::chrono::duration_cast<std::chrono::microseconds>(fim - inicio);
+
+    // Exibindo as saídas
+    std::cout << "Media: " << g_media << "\n";
+    std::cout << "Mediana: " << g_mediana << "\n";
+    std::cout << "Desvio padrao: " << g_dp << "\n";
+    std::cout << "Tempo (processos): " << duracao.count() << "us\n";
 }

@@ -6,6 +6,8 @@
 #include <future>
 #include <chrono>
 #include <iostream>
+#include <unistd.h>
+#include <sys/wait.h>
 
 std::vector<int> gerar_vector(int n, int lb, int ub);
 
@@ -18,3 +20,5 @@ float calc_desvio_padrao(std::vector<int> & v);
 void exec_process_multithread(std::vector<int> & v);
 
 void exec_process_unithread(std::vector<int> & v);
+
+void exec_process_multiprocess(std::vector<int> & v);
