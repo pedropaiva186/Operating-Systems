@@ -1,10 +1,10 @@
 all: lisrun
 	
 lisrun:
-	g++ main.cpp source/*.cpp -o atv2
+	g++ main.cpp source/*.cpp -o atv2.exe
 
 clean:
-	rm -f atv2
+	rm -f atv2.exe
 
 run:
-	./atv2
+	./atv2.exe
