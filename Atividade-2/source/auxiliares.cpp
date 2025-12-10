@@ -68,18 +68,15 @@ float calc_desvio_padrao(std::vector<int> & v)
     return dp;
 }
 
-void exec_process()
+void exec_process_multithread(std::vector<int> & vector_int)
 {
     // Coletando o tempo de início do algoritmo
     auto inicio = std::chrono::steady_clock::now();
 
-    // Criando o vector dentro das restrições da questão
-    std::vector<int> vector_int = gerar_vector(10000, 0, 100);
-
     // Criando uma thread para cada função, onde faço as chamadas dessa maneira para poder coletar os retornos das funções
     auto f_media = std::async(std::launch::async, calc_media, std::ref(vector_int));
     auto f_mediana = std::async(std::launch::async, calc_mediana, vector_int);
-    auto f_dp      = std::async(std::launch::async, calc_desvio_padrao, std::ref(vector_int));
+    auto f_dp = std::async(std::launch::async, calc_desvio_padrao, std::ref(vector_int));
 
     // Coletando os valores de retorno das funções
     float media = f_media.get();
@@ -90,11 +87,34 @@ void exec_process()
     auto fim = std::chrono::steady_clock::now();
 
     // Fazendo o cálculo da duração, e deixando-o no formato de exibição
-    auto duracao = std::chrono::duration_cast<std::chrono::milliseconds>(fim - inicio);
+    auto duracao = std::chrono::duration_cast<std::chrono::microseconds>(fim - inicio);
 
     // Exibindo os valores de saída
     std::cout << "Media: " << media << "\n";
     std::cout << "Mediana: " << mediana << "\n";
     std::cout << "Desvio padrão: " << dp << "\n";
-    std::cout << "Tempo de execução: " << duracao.count() << "ms\n";
+    std::cout << "Tempo de execução: " << duracao.count() << "us\n";
+}
+
+void exec_process_unithread(std::vector<int> & vector_int)
+{
+    // Coletando o tempo de início do algoritmo
+    auto inicio = std::chrono::steady_clock::now();
+
+    // Executando as funções
+    float media = calc_media(vector_int);
+    float mediana = calc_mediana(vector_int);
+    float dp = calc_desvio_padrao(vector_int);
+
+    // Coletando o tempo após as operações do algoritmoi
+    auto fim = std::chrono::steady_clock::now();
+
+    // Fazendo o cálculo da duração, e deixando-o no formato de exibição
+    auto duracao = std::chrono::duration_cast<std::chrono::microseconds>(fim - inicio);
+
+    // Exibindo os valores de saída
+    std::cout << "Media: " << media << "\n";
+    std::cout << "Mediana: " << mediana << "\n";
+    std::cout << "Desvio padrão: " << dp << "\n";
+    std::cout << "Tempo de execução: " << duracao.count() << "us\n";
 }

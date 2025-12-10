@@ -15,4 +15,6 @@ float calc_mediana(std::vector<int> v);
 
 float calc_desvio_padrao(std::vector<int> & v);
 
-void exec_process();
+void exec_process_multithread(std::vector<int> & v);
+
+void exec_process_unithread(std::vector<int> & v);
